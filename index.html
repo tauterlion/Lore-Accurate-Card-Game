@@ -5,399 +5,211 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>The Lore Health & Turn Counter</title>
 <style>
-  html, body {
-    margin: 0;
-    height: 100%;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    overflow: hidden;
+ :root {
+  /* Colors */
+  --color-primary: #00bfa5;
+  --color-primary-dark: #00806a;
+  --color-danger: #e53935;
+  --color-danger-dark: #ab2c27;
+  --color-bg: rgba(18, 18, 18, 1);
+  --color-text: #e0e0e0;
+
+  /* Sizing */
+  --font-size-base: 1rem;
+  --font-size-large: 2.2rem;
+  --font-size-xl: 4rem;
+  --btn-padding-vertical: 0.8rem;
+  --btn-padding-horizontal: 1.5rem;
+  --btn-border-radius: 12px;
+  --btn-width: 100px;
+  --btn-gap: 1rem;
+  --container-padding-vertical: 2rem;
+  --container-padding-horizontal: 3rem;
+  --min-container-width: 320px;
+}
+
+/* Use variables */
+html, body {
+  margin: 0;
+  height: 100%;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  overflow: hidden;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+}
+
+#container {
+  background: rgba(0, 0, 0, 0.8);
+  padding: var(--container-padding-vertical) var(--container-padding-horizontal);
+  border-radius: 16px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.9);
+  text-align: center;
+  z-index: 1;
+  min-width: var(--min-container-width);
+  position: relative;
+}
+
+.buttons {
+  display: flex;
+  gap: var(--btn-gap);
+  max-width: max-content;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin: 0 auto;
+}
+
+button {
+  flex: 0 0 var(--btn-width);
+  border: none;
+  border-radius: var(--btn-border-radius);
+  color: #121212;
+  font-size: var(--font-size-large);
+  padding: var(--btn-padding-vertical) var(--btn-padding-horizontal);
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 0 10px;
+  transition: background 0.3s ease, box-shadow 0.3s ease, color 0.3s ease;
+  background: var(--color-primary);
+  user-select: none;
+  text-align: center;
+  white-space: nowrap;
+}
+
+button:active {
+  box-shadow: 0 0 20px inset;
+}
+
+button:disabled {
+  background: #444;
+  cursor: not-allowed;
+  box-shadow: none;
+  color: #888;
+}
+
+#reset {
+  background: var(--color-danger) !important;
+  color: white !important;
+  box-shadow: 0 0 10px var(--color-danger) !important;
+}
+
+#reset:active {
+  background: var(--color-danger-dark) !important;
+  box-shadow: 0 0 20px var(--color-danger-dark) inset !important;
+}
+
+/* Turn container and buttons */
+
+#turnContainer {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  background: rgba(0, 0, 0, 0.8);
+  border-radius: 16px;
+  box-shadow: 0 0 15px var(--color-primary);
+  padding: 1rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  user-select: none;
+  z-index: 1002;
+  min-width: 110px;
+}
+
+#turnCounter {
+  font-weight: 700;
+  font-size: 1.4rem;
+  color: var(--color-primary);
+  margin-bottom: 0.6rem;
+  min-width: 100%;
+  text-align: center;
+}
+
+#turnButtons {
+  display: flex;
+  gap: 0.6rem;
+  width: 100%;
+  justify-content: center;
+}
+
+#turnButtons button {
+  flex: 1 1 40px;
+  font-size: 1.6rem;
+  padding: 0.4rem 0;
+  border-radius: var(--btn-border-radius);
+  background: var(--color-primary);
+  color: #121212;
+  box-shadow: 0 0 10px var(--color-primary);
+  cursor: pointer;
+  border: none;
+  font-weight: bold;
+  user-select: none;
+  transition: background 0.3s ease, box-shadow 0.3s ease;
+}
+
+#turnButtons button:active {
+  box-shadow: 0 0 20px inset;
+}
+
+#turnButtons button:disabled {
+  background: #444;
+  cursor: not-allowed;
+  box-shadow: none;
+  color: #888;
+}
+
+/* Media queries for smaller devices */
+
+@media (max-width: 500px) {
+  :root {
+    --btn-width: 70px;
+    --font-size-large: 1.6rem;
+    --btn-padding-vertical: 0.5rem;
+    --btn-padding-horizontal: 1rem;
+    --container-padding-vertical: 1.2rem;
+    --container-padding-horizontal: 1.5rem;
   }
-  body {
-    background-color: rgba(18, 18, 18, 1);
-    color: #e0e0e0;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    user-select: none;
-    padding: 1rem;
-    position: relative;
-  }
-  /* VIDEO BACKGROUND */
-  #bgVideo {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    z-index: -2;
-    filter: brightness(40%) contrast(120%);
-    opacity: 0.3;
-    pointer-events: none;
-  }
-  /* DARK OVERLAY */
-  #bgOverlay {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.7);
-    z-index: -1;
-    pointer-events: none;
-  }
-  /* UI container */
-  #container {
-    background: rgba(0, 0, 0, 0.8);
-    padding: 2rem 3rem;
-    border-radius: 16px;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.9);
-    text-align: center;
-    z-index: 1;
-    min-width: 320px;
-    position: relative;
-  }
-  /* Character selector on side */
-  select {
-    position: fixed;
-    left: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    writing-mode: vertical-rl;
-    text-orientation: mixed;
-    font-size: 1.4rem;
-    font-weight: 700;
-    padding: 0.6rem 1rem;
-    margin: 0;
-    border-radius: 0 12px 12px 0;
-    border: none;
-    background: rgba(18, 18, 18, 0.6);
-    color: #e0e0e0;
-    backdrop-filter: blur(5px);
-    cursor: pointer;
-    width: 3.5rem;
-    height: 9rem;
-    text-align-last: center;
-    z-index: 1000;
-  }
-  select:focus {
-    outline: none;
-    background: rgba(18, 18, 18, 0.8);
-    box-shadow: 0 0 10px #008e75;
-  }
-  /* Player name styling */
-  #playerName {
-    font-size: 2.8rem;
-    font-weight: 900;
-    margin-bottom: 0.3rem;
-    letter-spacing: 0.1em;
-    text-shadow: 0 0 6px #00bfa5;
-    min-height: 3.5rem;
-    transition: color 0.3s ease, text-shadow 0.3s ease;
-  }
-  /* HP number styling */
-  h1#hp {
-    font-size: 4rem;
-    margin: 0 0 1rem;
-    font-weight: 900;
-    letter-spacing: 0.05em;
-    text-shadow: 0 0 5px #00bfa5;
-    transition: color 0.3s ease, text-shadow 0.3s ease;
-  }
-  /* Buttons container */
-  .buttons {
-    display: flex;
-    gap: 1rem;
-    max-width: max-content;
-    flex-wrap: wrap;
-    justify-content: center;
-    margin: 0 auto;
-  }
-  /* Buttons styling */
-  button {
-    flex: 0 0 100px;
-    border: none;
-    border-radius: 12px;
-    color: #121212;
-    font-size: 2.2rem;
-    padding: 1rem 2rem;
-    font-weight: bold;
-    cursor: pointer;
-    box-shadow: 0 0 10px;
-    transition: background 0.3s ease, box-shadow 0.3s ease, color 0.3s ease;
-    background: #00bfa5;
-    user-select: none;
-    text-align: center;
-    white-space: nowrap;
-  }
-  button:active {
-    box-shadow: 0 0 20px inset;
-  }
-  button:disabled {
-    background: #444;
-    cursor: not-allowed;
-    box-shadow: none;
-    color: #888;
-  }
-  #reset {
-    background: #e53935 !important;
-    color: white !important;
-    box-shadow: 0 0 10px #e53935 !important;
-  }
-  #reset:active {
-    background: #ab2c27 !important;
-    box-shadow: 0 0 20px #ab2c27 inset !important;
-  }
-  /* Fullscreen button */
-  #fullscreenToggle {
-    position: fixed;
-    top: 1rem;
-    left: 3.8rem;
-    width: 40px;
-    height: 40px;
-    background: #ff9800;
-    color: #121212;
-    border: none;
-    border-radius: 8px;
-    box-shadow: 0 0 8px #ff9800;
-    font-size: 1.8rem;
-    cursor: pointer;
-    z-index: 1001;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    user-select: none;
-    padding: 0;
-    line-height: 1;
-  }
-  #fullscreenToggle::before {
-    content: "\26F6";
-  }
-  #fullscreenToggle:active {
-    background: #cc7a00;
-    box-shadow: 0 0 16px #cc7a00 inset;
-  }
-  /* Low HP animation */
-  @keyframes pulseRedGlow {
-    0%, 100% {
-      text-shadow: 0 0 5px #e53935, 0 0 10px #e53935;
-      color: #e53935;
-    }
-    50% {
-      text-shadow: 0 0 15px #ff6659, 0 0 30px #ff6659;
-      color: #ff6659;
-    }
-  }
-  .low-hp {
-    animation: pulseRedGlow 1.5s infinite ease-in-out;
-  }
-  .zero-hp {
-    color: #e53935 !important;
-    text-shadow: 0 0 10px #e53935 !important;
-  }
-  /* Turn container */
+
   #turnContainer {
-    position: fixed;
-    top: 1rem;
-    right: 1rem;
-    background: rgba(0, 0, 0, 0.8);
-    border-radius: 16px;
-    box-shadow: 0 0 15px #00bfa5;
-    padding: 1rem 1.5rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    user-select: none;
-    z-index: 1002;
-    min-width: 110px;
+    min-width: 90px;
+    padding: 0.6rem 1rem;
   }
+
   #turnCounter {
-    font-weight: 700;
-    font-size: 1.4rem;
-    color: #00bfa5;
-    margin-bottom: 0.6rem;
-    min-width: 100%;
-    text-align: center;
+    font-size: 1.1rem;
+    margin-bottom: 0.4rem;
   }
-  #turnButtons {
-    display: flex;
-    gap: 0.6rem;
-    width: 100%;
-    justify-content: center;
-  }
+
   #turnButtons button {
-    flex: 1 1 40px;
-    font-size: 1.6rem;
-    padding: 0.4rem 0;
-    border-radius: 12px;
-    background: #00bfa5;
-    color: #121212;
-    box-shadow: 0 0 10px #00bfa5;
-    cursor: pointer;
-    border: none;
-    font-weight: bold;
-    user-select: none;
-    transition: background 0.3s ease, box-shadow 0.3s ease;
-  }
-  #turnButtons button:active {
-    box-shadow: 0 0 20px inset;
-  }
-  #turnButtons button:disabled {
-    background: #444;
-    cursor: not-allowed;
-    box-shadow: none;
-    color: #888;
-  }
-  /* Character Info Panel */
-  #charInfoPanel {
-    position: fixed;
-    top: 0;
-    right: -360px; /* hidden offscreen */
-    width: 320px;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.9);
-    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.8);
-    padding: 1.5rem 1.8rem;
-    overflow-y: auto;
-    color: #e0e0e0;
-    transition: right 0.3s ease;
-    z-index: 1003;
-    font-size: 0.95rem;
-  }
-  #charInfoPanel.open {
-    right: 0;
-  }
-  /* Toggle button at bottom left */
-  #charInfoToggleBtn {
-    position: fixed;
-    bottom: 1rem;
-    left: 1rem;
-    background: #00bfa5;
-    color: #121212;
-    border: none;
-    border-radius: 12px;
-    padding: 0.6rem 1rem;
-    font-weight: 700;
-    font-size: 1rem;
-    cursor: pointer;
-    box-shadow: 0 0 10px #00bfa5;
-    user-select: none;
-    z-index: 1004;
-    transition: background 0.3s ease, box-shadow 0.3s ease;
-  }
-  #charInfoToggleBtn:hover {
-    background: #00d2b5;
-    box-shadow: 0 0 15px #00d2b5;
-  }
-  #charInfoToggleBtn:active {
-    background: #00806a;
-    box-shadow: 0 0 20px inset #00806a;
-  }
-
-  /* Game Rules Panel */
-  #gameRulesPanel {
-    position: fixed;
-    top: 3rem;
-    left: 3rem;
-    right: 3rem;
-    bottom: 3rem;
-    background: rgba(10, 10, 10, 0.95);
-    border-radius: 16px;
-    padding: 2rem 2.5rem;
-    box-shadow: 0 0 25px #00bfa5;
-    overflow-y: auto;
-    color: #e0e0e0;
-    font-size: 1rem;
-    display: none;
-    z-index: 1010;
-  }
-  #gameRulesPanel.open {
-    display: block;
-  }
-  /* Game Rules Toggle Button bottom-right */
-  #gameRulesToggleBtn {
-    position: fixed;
-    bottom: 1rem;
-    right: 1rem;
-    background: #00bfa5;
-    color: #121212;
-    border: none;
-    border-radius: 12px;
-    padding: 0.6rem 1rem;
-    font-weight: 700;
-    font-size: 1rem;
-    cursor: pointer;
-    box-shadow: 0 0 10px #00bfa5;
-    user-select: none;
-    z-index: 1011;
-    transition: background 0.3s ease, box-shadow 0.3s ease;
-  }
-  #gameRulesToggleBtn:hover {
-    background: #00d2b5;
-    box-shadow: 0 0 15px #00d2b5;
-  }
-  #gameRulesToggleBtn:active {
-    background: #00806a;
-    box-shadow: 0 0 20px inset #00806a;
-  }
-
-  /* Colored titles & subtitles in Game Rules */
-  #gameRulesPanel h2,
-  #gameRulesPanel h3 {
-    color: #00bfa5;
-    margin-top: 1.5rem;
-    margin-bottom: 0.7rem;
-  }
-  #gameRulesPanel h2 {
-    font-size: 1.8rem;
-    border-bottom: 2px solid #00bfa5;
-    padding-bottom: 0.3rem;
-  }
-  #gameRulesPanel h3 {
     font-size: 1.3rem;
+    padding: 0.3rem 0;
   }
-  #gameRulesPanel p, #gameRulesPanel ul {
-    margin-left: 1.2rem;
-    line-height: 1.4;
-  }
-  #gameRulesPanel ul {
-    margin-bottom: 1rem;
+}
+
+@media (max-width: 350px) {
+  :root {
+    --btn-width: 60px;
+    --font-size-large: 1.4rem;
+    --btn-padding-vertical: 0.4rem;
+    --btn-padding-horizontal: 0.8rem;
+    --container-padding-vertical: 1rem;
+    --container-padding-horizontal: 1rem;
   }
 
-  @media (max-width: 400px) {
-    #turnContainer {
-      min-width: 90px;
-      padding: 0.6rem 1rem;
-    }
-    #turnCounter {
-      font-size: 1.1rem;
-      margin-bottom: 0.4rem;
-    }
-    #turnButtons button {
-      font-size: 1.3rem;
-      padding: 0.3rem 0;
-    }
-    button {
-      flex: 0 0 80px;
-      font-size: 1.8rem;
-      padding: 0.8rem 1.2rem;
-    }
-    #charInfoPanel {
-      width: 280px;
-      padding: 1rem 1.2rem;
-    }
-    #charInfoToggleBtn {
-      top: 60%;
-      left: 3.5rem;
-      padding: 0.5rem 0.8rem;
-      font-size: 0.9rem;
-    }
-    #gameRulesPanel {
-      top: 1rem;
-      left: 1rem;
-      right: 1rem;
-      bottom: 1rem;
-      padding: 1rem 1.2rem;
-    }
+  #turnContainer {
+    min-width: 70px;
+    padding: 0.5rem 0.8rem;
   }
+
+  #turnCounter {
+    font-size: 1rem;
+  }
+
+  #turnButtons button {
+    font-size: 1.1rem;
+    padding: 0.25rem 0;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -601,28 +413,29 @@ Trigger unique events that activate immediately. Clubs cannot be paired with dia
     },
     Figure: {
       role: 'Disruptor / Controller',
-      passive: 'Hallucination Field: At the start of each round, choose an opponent and select a card from their hand. That card is debuffed (effects nullified) for 1 turn.',
-      active: 'Discard ♠ to confuse all opponents, forcing them to skip their next turn.'
+      passive: 'Hallucination Field: At the start of each round, choose an opponent and select a card from their hand. That card is debuffed (effects nullified) until their turn ends.',
+      active: 'Discard ♦ to make a player of your choice lose their passive ability until the end of your next turn.'
     },
     Nimbus: {
       role: 'Leader / Lightning',
-      passive: 'Gain +1 turn at the start of your turn if your HP is above 15.',
-      active: 'Discard ♥ to shock an opponent, dealing 3 damage.'
+      passive: 'Gain 1 Charge token whenever you discard a ♥ or ♠ (max 6).'
+      Charged attack: 'For every 3 Charges, your next ♠ attack gains +4 damage per 3 Charges; consumes all Charges.',
+      active: 'Discard two cards and guess the suit of the top deck card. If correct, draw 3 cards and gain 1 Charge token; if wrong, skip your current turn, losing the opportunity to play.'
     },
     Frost: {
       role: 'Crowd Control / Ice',
-      passive: 'Opponents lose their next attack if they damage you.',
-      active: 'Discard ♣ to freeze an opponent, skipping their next turn.'
+      passive: 'At the start of your turn, if you were damaged by a red card (♥ or ♦) last turn, permanently gain +1 damage to all your attacks.',
+      active: 'Discard ♣ to stun a player (skip their next turn), or draw a card; if it’s a face card, freeze all opponents for 1 turn.'
     },
     Siphon: {
       role: 'Energy Drain / Utility',
-      passive: 'Gain 1 HP whenever you deal damage.',
-      active: 'Discard ♠ to steal 1 turn from an opponent.'
+      passive: 'Heal half the damage you deal with ♠ cards.',
+      active: 'Discard ♣ to copy the last Active ability used by any player this turn.'
     },
     Artemis: {
-      role: 'Ranged DPS / Precision',
-      passive: 'Increase damage by 1 when HP is below 10.',
-      active: 'Discard ♥ to perform a critical hit that ignores defense.'
+      role: 'Tactical Disruptor / Precision Striker',
+      passive: 'At the start of your turn, look at the top card of the deck. You may play any card as a ♠',
+      active: 'Discard 1 card to force one opponent of your choice to reveal a random card from their hand'
     }
   };
 
