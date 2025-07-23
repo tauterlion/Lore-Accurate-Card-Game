@@ -602,27 +602,27 @@ Trigger unique events that activate immediately. Clubs cannot be paired with dia
     Figure: {
       role: 'Disruptor / Controller',
       passive: 'Hallucination Field: At the start of each round, choose an opponent and select a card from their hand. That card is debuffed (effects nullified) for 1 turn.',
-      active: 'Discard ♠ to confuse all opponents, forcing them to skip their next turn.'
+      active: 'Discard ♦ to make a player of your choice lose their passive ability until the start of your next turn.'
     },
     Nimbus: {
       role: 'Leader / Lightning',
-      passive: 'Gain +1 turn at the start of your turn if your HP is above 15.',
-      active: 'Discard ♥ to shock an opponent, dealing 3 damage.'
+      passive: 'Gain 1 Charge token whenever you discard a ♥ or ♠ (max 6). For every 3 Charges, your next ♠ attack gains +4 damage; consumes all Charges.',
+      active: 'Discard two cards and guess the suit of the top deck card. If correct, draw 3 cards and gain 1 Charge token; if wrong, skip your current turn, losing the opportunity to play.'
     },
     Frost: {
       role: 'Crowd Control / Ice',
-      passive: 'Opponents lose their next attack if they damage you.',
-      active: 'Discard ♣ to freeze an opponent, skipping their next turn.'
+      passive: 'At the start of your turn, if you were damaged by a red card (♥ or ♦) last turn, permanently gain +1 damage to all your attacks.',
+      active: 'Discard ♣ to stun a player (skip their next turn), or draw a card; if it’s a face card, freeze all opponents for 1 turn.'
     },
     Siphon: {
       role: 'Energy Drain / Utility',
-      passive: 'Gain 1 HP whenever you deal damage.',
-      active: 'Discard ♠ to steal 1 turn from an opponent.'
+      passive: 'Heal half the damage you deal with ♠ cards.',
+      active: 'Discard ♣ to copy the last Active ability used by any player this turn.'
     },
     Artemis: {
-      role: 'Ranged DPS / Precision',
-      passive: 'Increase damage by 1 when HP is below 10.',
-      active: 'Discard ♥ to perform a critical hit that ignores defense.'
+      role: 'Tactical Disruptor / Precision Striker',
+      passive: 'At the start of your turn, look at the top card of the deck. You may play any card as a ♠ (attack).',
+      active: 'Discard 1 card to force the opponent of your choice to reveal a random card from their hand.'
     }
   };
 
