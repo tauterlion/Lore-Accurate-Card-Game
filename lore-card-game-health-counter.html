@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>The Lore Health & Turn Counter</title>
+<style>
+  html, body {
+    margin: 0;
+    height: 100%;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    overflow: hidden;
+  }
+  body {
+    background-color: rgba(18, 18, 18, 1);
+    color: #e0e0e0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    user-select: none;
+    padding: 1rem;
+    position: relative;
+  }
+  /* VIDEO BACKGROUND */
+  #bgVideo {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: -2;
+    filter: brightness(40%) contrast(120%);
+    opacity: 0.3;
+    pointer-events: none;
+  }
+  /* DARK OVERLAY */
+  #bgOverlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: -1;
+    pointer-events: none;
+  }
+  /* UI container */
+  #container {
+    background: rgba(0, 0, 0, 0.8);
+    padding: 2rem 3rem;
+    border-radius: 16px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.9);
+    text-align: center;
+    z-index: 1;
+    min-width: 320px;
+    position: relative;
+  }
+  /* Character selector on side */
+  select {
+    position: fixed;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    font-size: 1.4rem;
+    font-weight: 700;
+    padding: 0.6rem 1rem;
+    margin: 0;
+    border-radius: 0 12px 12px 0;
+    border: none;
+    background: rgba(18, 18, 18, 0.6);
+    color: #e0e0e0;
+    backdrop-filter: blur(5px);
+    cursor: pointer;
+    width: 3.5rem;
+    height: 9rem;
+    text-align-last: center;
+    z-index: 1000;
+  }
+  select:focus {
+    outline: none;
+    background: rgba(18, 18, 18, 0.8);
+    box-shadow: 0 0 10px #008e75;
+  }
+  /* Player name styling */
+  #playerName {
+    font-size: 2.8rem;
+    font-weight: 900;
+    margin-bottom: 0.3rem;
+    letter-spacing: 0.1em;
+    text-shadow: 0 0 6px #00bfa5;
+    min-height: 3.5rem;
+    transition: color 0.3s ease, text-shadow 0.3s ease;
+  }
+  /* HP number styling */
+  h1#hp {
+    font-size: 4rem;
+    margin: 0 0 1rem;
+    font-weight: 900;
+    letter-spacing: 0.05em;
+    text-shadow: 0 0 5px #00bfa5;
+    transition: color 0.3s ease, text-shadow 0.3s ease;
+  }
+  /* Buttons container */
+  .buttons {
+    display: flex;
+    gap: 1rem;
+    max-width: max-content;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 0 auto;
+  }
+  /* Buttons styling */
+  button {
+    flex: 0 0 100px;
+    border: none;
+    border-radius: 12px;
+    color: #121212;
+    font-size: 2.2rem;
+    padding: 1rem 2rem;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 0 10px;
+    transition: background 0.3s ease, box-shadow 0.3s ease, color 0.3s ease;
+    background: #00bfa5;
+    user-select: none;
+    text-align: center;
+    white-space: nowrap;
+  }
+  button:active {
+    box-shadow: 0 0 20px inset;
+  }
+  button:disabled {
+    background: #444;
+    cursor: not-allowed;
+    box-shadow: none;
+    color: #888;
+  }
+  #reset {
+    background: #e53935 !important;
+    color: white !important;
+    box-shadow: 0 0 10px #e53935 !important;
+  }
+  #reset:active {
+    background: #ab2c27 !important;
+    box-shadow: 0 0 20px #ab2c27 inset !important;
+  }
+  /* Fullscreen button */
+  #fullscreenToggle {
+    position: fixed;
+    top: 1rem;
+    left: 3.8rem;
+    width: 40px;
+    height: 40px;
+    background: #ff9800;
+    color: #121212;
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 0 8px #ff9800;
+    font-size: 1.8rem;
+    cursor: pointer;
+    z-index: 1001;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+    padding: 0;
+    line-height: 1;
+  }
+  #fullscreenToggle::before {
+    content: "\26F6";
+  }
+  #fullscreenToggle:active {
+    background: #cc7a00;
+    box-shadow: 0 0 16px #cc7a00 inset;
+  }
+  /* Low HP animation */
+  @keyframes pulseRedGlow {
+    0%, 100% {
+      text-shadow: 0 0 5px #e53935, 0 0 10px #e53935;
+      color: #e53935;
+    }
+    50% {
+      text-shadow: 0 0 15px #ff6659, 0 0 30px #ff6659;
+      color: #ff6659;
+    }
+  }
+  .low-hp {
+    animation: pulseRedGlow 1.5s infinite ease-in-out;
+  }
+  .zero-hp {
+    color: #e53935 !important;
+    text-shadow: 0 0 10px #e53935 !important;
+  }
+  /* Turn container */
+  #turnContainer {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    background: rgba(0, 0, 0, 0.8);
+    border-radius: 16px;
+    box-shadow: 0 0 15px #00bfa5;
+    padding: 1rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    user-select: none;
+    z-index: 1002;
+    min-width: 110px;
+  }
+  #turnCounter {
+    font-weight: 700;
+    font-size: 1.4rem;
+    color: #00bfa5;
+    margin-bottom: 0.6rem;
+    min-width: 100%;
+    text-align: center;
+  }
+  #turnButtons {
+    display: flex;
+    gap: 0.6rem;
+    width: 100%;
+    justify-content: center;
+  }
+  #turnButtons button {
+    flex: 1 1 40px;
+    font-size: 1.6rem;
+    padding: 0.4rem 0;
+    border-radius: 12px;
+    background: #00bfa5;
+    color: #121212;
+    box-shadow: 0 0 10px #00bfa5;
+    cursor: pointer;
+    border: none;
+    font-weight: bold;
+    user-select: none;
+    transition: background 0.3s ease, box-shadow 0.3s ease;
+  }
+  #turnButtons button:active {
+    box-shadow: 0 0 20px inset;
+  }
+  #turnButtons button:disabled {
+    background: #444;
+    cursor: not-allowed;
+    box-shadow: none;
+    color: #888;
+  }
+  /* Character Info Panel */
+  #charInfoPanel {
+    position: fixed;
+    top: 0;
+    right: -360px; /* hidden offscreen */
+    width: 320px;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.8);
+    padding: 1.5rem 1.8rem;
+    overflow-y: auto;
+    color: #e0e0e0;
+    transition: right 0.3s ease;
+    z-index: 1003;
+    font-size: 0.95rem;
+  }
+  #charInfoPanel.open {
+    right: 0;
+  }
+  /* Toggle button at bottom left */
+  #charInfoToggleBtn {
+    position: fixed;
+    bottom: 1rem;
+    left: 1rem;
+    background: #00bfa5;
+    color: #121212;
+    border: none;
+    border-radius: 12px;
+    padding: 0.6rem 1rem;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    box-shadow: 0 0 10px #00bfa5;
+    user-select: none;
+    z-index: 1004;
+    transition: background 0.3s ease, box-shadow 0.3s ease;
+  }
+  #charInfoToggleBtn:hover {
+    background: #00d2b5;
+    box-shadow: 0 0 15px #00d2b5;
+  }
+  #charInfoToggleBtn:active {
+    background: #00806a;
+    box-shadow: 0 0 20px inset #00806a;
+  }
+
+  /* Game Rules Panel */
+  #gameRulesPanel {
+    position: fixed;
+    top: 3rem;
+    left: 3rem;
+    right: 3rem;
+    bottom: 3rem;
+    background: rgba(10, 10, 10, 0.95);
+    border-radius: 16px;
+    padding: 2rem 2.5rem;
+    box-shadow: 0 0 25px #00bfa5;
+    overflow-y: auto;
+    color: #e0e0e0;
+    font-size: 1rem;
+    display: none;
+    z-index: 1010;
+  }
+  #gameRulesPanel.open {
+    display: block;
+  }
+  /* Game Rules Toggle Button bottom-right */
+  #gameRulesToggleBtn {
+    position: fixed;
+    bottom: 1rem;
+    right: 1rem;
+    background: #00bfa5;
+    color: #121212;
+    border: none;
+    border-radius: 12px;
+    padding: 0.6rem 1rem;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    box-shadow: 0 0 10px #00bfa5;
+    user-select: none;
+    z-index: 1011;
+    transition: background 0.3s ease, box-shadow 0.3s ease;
+  }
+  #gameRulesToggleBtn:hover {
+    background: #00d2b5;
+    box-shadow: 0 0 15px #00d2b5;
+  }
+  #gameRulesToggleBtn:active {
+    background: #00806a;
+    box-shadow: 0 0 20px inset #00806a;
+  }
+
+  /* Colored titles & subtitles in Game Rules */
+  #gameRulesPanel h2,
+  #gameRulesPanel h3 {
+    color: #00bfa5;
+    margin-top: 1.5rem;
+    margin-bottom: 0.7rem;
+  }
+  #gameRulesPanel h2 {
+    font-size: 1.8rem;
+    border-bottom: 2px solid #00bfa5;
+    padding-bottom: 0.3rem;
+  }
+  #gameRulesPanel h3 {
+    font-size: 1.3rem;
+  }
+  #gameRulesPanel p, #gameRulesPanel ul {
+    margin-left: 1.2rem;
+    line-height: 1.4;
+  }
+  #gameRulesPanel ul {
+    margin-bottom: 1rem;
+  }
+
+  @media (max-width: 400px) {
+    #turnContainer {
+      min-width: 90px;
+      padding: 0.6rem 1rem;
+    }
+    #turnCounter {
+      font-size: 1.1rem;
+      margin-bottom: 0.4rem;
+    }
+    #turnButtons button {
+      font-size: 1.3rem;
+      padding: 0.3rem 0;
+    }
+    button {
+      flex: 0 0 80px;
+      font-size: 1.8rem;
+      padding: 0.8rem 1.2rem;
+    }
+    #charInfoPanel {
+      width: 280px;
+      padding: 1rem 1.2rem;
+    }
+    #charInfoToggleBtn {
+      top: 60%;
+      left: 3.5rem;
+      padding: 0.5rem 0.8rem;
+      font-size: 0.9rem;
+    }
+    #gameRulesPanel {
+      top: 1rem;
+      left: 1rem;
+      right: 1rem;
+      bottom: 1rem;
+      padding: 1rem 1.2rem;
+    }
+  }
+</style>
+</head>
+<body>
+  <video id="bgVideo" autoplay muted loop playsinline>
+    <source src="https://i.imgur.com/SvvD34M.mp4" type="video/mp4" />
+  </video>
+  <div id="bgOverlay"></div>
+
+  <select id="characterSelect" aria-label="Select your character">
+    <option value="Natrolite">Natrolite</option>
+    <option value="Cruise">Cruise</option>
+    <option value="Spectre">Spectre</option>
+    <option value="Figure">The Figure</option>
+    <option value="Nimbus">Nimbus</option>
+    <option value="Frost">Frost</option>
+    <option value="Siphon">Siphon</option>
+    <option value="Artemis">Artemis</option>
+  </select>
+
+  <button id="fullscreenToggle" aria-label="Toggle fullscreen" title="Toggle fullscreen"></button>
+
+  <div id="container">
+    <div id="playerName">Natrolite</div>
+    <h1 id="hp">20</h1>
+    <div class="buttons">
+      <button id="decrease" aria-label="Decrease health by 1">-1</button>
+      <button id="reset" aria-label="Reset health to 20 and turns to 0">Reset</button>
+      <button id="increase" aria-label="Increase health by 1">+1</button>
+    </div>
+  </div>
+
+  <div id="turnContainer" aria-live="polite" aria-atomic="true" role="region" aria-label="Turn counter">
+    <div id="turnCounter">Turns: 0</div>
+    <div id="turnButtons">
+      <button id="turnDecrease" aria-label="Decrease turns by 1">-1</button>
+      <button id="turnIncrease" aria-label="Increase turns by 1">+1</button>
+    </div>
+  </div>
+
+  <button id="charInfoToggleBtn" aria-expanded="false" aria-controls="charInfoPanel" aria-label="Toggle character info panel">Character Info</button>
+  <aside id="charInfoPanel" role="region" aria-live="polite" aria-atomic="true" aria-label="Character information panel">
+    <h2 id="charName">Natrolite</h2>
+    <h3>Role</h3>
+    <p id="charRole">Tank / Damage Dealer</p>
+    <h3>Passive Ability</h3>
+    <p id="charPassive">Opponents lose 2 HP whenever they damage you.</p>
+    <h3>Active Ability</h3>
+    <p id="charActive">Discard ♦ to block all damage from one ♠ attack.</p>
+  </aside>
+
+  <button id="gameRulesToggleBtn" aria-expanded="false" aria-controls="gameRulesPanel" aria-label="Toggle game rules panel">Game Rules</button>
+  <aside id="gameRulesPanel" role="region" aria-live="polite" aria-atomic="true" aria-label="Game rules panel">
+<h2 style="color:#00bfa5;">Game Rules &amp; Card Mechanics Summary</h2>
+
+<h3 style="color:#00bfa5;">Objective</h3>
+<p>Win by either:</p>
+<ul>
+  <li>Being the last player standing with HP remaining, or</li>
+  <li>Causing all other players to lose all their cards.</li>
+</ul>
+<p>You lose if:</p>
+<ul>
+  <li>Your HP reaches zero, or</li>
+  <li>You run out of cards or forfeit by discarding all cards.</li>
+</ul>
+
+<h3 style="color:#00bfa5;">Card Suits &amp; Their Basic Functions</h3>
+<p><strong>Spades (♠):</strong> Attack cards<br />
+Damage activates at the end of the target’s next turn, allowing them time to counter.</p>
+
+<p><strong>Hearts (♥):</strong> Healing cards<br />
+Activate immediately when played.</p>
+
+<p><strong>Diamonds (♦):</strong> Charge/Buff cards<br />
+Can be played to charge (+4 value per card) by holding them until your next turn, or played instantly with one compatible non-club card to boost its effect.</p>
+
+<p><strong>Clubs (♣):</strong> Special effect cards<br />
+Trigger unique events that activate immediately. Clubs cannot be paired with diamonds.</p>
+
+<h3 style="color:#00bfa5;">Turn Structure</h3>
+<p>On your turn, perform only one action (ends your turn immediately):</p>
+<ul>
+  <li>Draw: Draw 1 card.</li>
+  <li>Discard: Discard any number of cards.</li>
+  <li>Play:
+    <ul>
+      <li>Play one card, OR</li>
+      <li>Play multiple cards only if they form a valid poker hand (limited to 3 cards max), OR</li>
+      <li>Play one diamond plus one non-club card (diamond boosts the other card).</li>
+    </ul>
+  </li>
+</ul>
+
+<h3 style="color:#00bfa5;">Valid Poker Hand Combos (up to 3 cards)</h3>
+<ul>
+  <li>Pair (2 cards, same rank)</li>
+  <li>Three of a kind (3 cards, same rank)</li>
+  <li>Flush (3 cards, same suit)</li>
+  <li>Straight (3 cards, consecutive rank, any suits)</li>
+</ul>
+<p>Full house, four of a kind, etc., not allowed due to 3-card limit.</p>
+
+<h3 style="color:#00bfa5;">Combo-Based Card Draw Bonuses</h3>
+<p>When you play a valid poker hand combo, immediately draw cards as follows:</p>
+<ul>
+  <li>Pair (2 cards): Draw 1 card</li>
+  <li>Three of a Kind (3 cards): Draw 2 cards</li>
+  <li>Straight (3 cards): Draw 3 cards</li>
+  <li>Flush (3 cards): Draw 4 cards</li>
+</ul>
+<p>Only one combo draw bonus per turn (no stacking if playing multiple combos).</p>
+
+<h3 style="color:#00bfa5;">Diamond Card Draw Bonuses</h3>
+<ul>
+  <li>When you play a Diamond (♦) card together with a Spade (♠) or Heart (♥) card, draw 1 card immediately.</li>
+  <li>When you play a charged Diamond card (held and charged until your next turn), draw 3 cards immediately.</li>
+</ul>
+
+<h3 style="color:#00bfa5;">Club Card Events</h3>
+<p><strong>Jack (♣) — Double Draw:</strong> All players draw 2 cards.</p>
+<p><strong>Queen (♣) — Energy Drain:</strong> All players’ cooldowns, counters, and powers reset; if none, discard 1 card.</p>
+<p><strong>King (♣) — Silence Field:</strong> No Active abilities next round; passives still active.</p>
+<p><strong>Ace (♣) — Wildcard Mastery:</strong></p>
+<ul>
+  <li>Play: Choose and apply any one club event immediately.</li>
+  <li>Discard: Double one of your passive or active ability effects permanently.</li>
+</ul>
+<p><strong>Numbered Clubs (affect player + one opponent):</strong></p>
+<ul>
+  <li>2–5: Both discard 1 card or skip next draw phase.</li>
+  <li>6–8: Combine hands, shuffle, redraw.</li>
+  <li>9–10: Both discard entire hands and redraw.</li>
+</ul>
+
+<h3 style="color:#00bfa5;">Discarding Rules</h3>
+<ul>
+  <li>You may discard any number of cards at any time, regardless of hand size.</li>
+  <li>Discarding all cards in your hand is an immediate forfeit.</li>
+  <li>When you discard any Club card (except Ace), you immediately draw 2 cards.</li>
+</ul>
+
+<h3 style="color:#00bfa5;">Additional Notes</h3>
+<p>Hearts and Clubs activate immediately; Spades activate delayed at target’s turn end; Diamonds activate instantly when paired or by charging.</p>
+<p>Characters’ abilities interact with these mechanics uniquely.</p>
+
+  </aside>
+
+<script>
+  const hpDisplay = document.getElementById('hp');
+  const increaseBtn = document.getElementById('increase');
+  const decreaseBtn = document.getElementById('decrease');
+  const resetBtn = document.getElementById('reset');
+  const characterSelect = document.getElementById('characterSelect');
+  const playerName = document.getElementById('playerName');
+
+  const turnCounter = document.getElementById('turnCounter');
+  const turnIncreaseBtn = document.getElementById('turnIncrease');
+  const turnDecreaseBtn = document.getElementById('turnDecrease');
+
+  const fullscreenBtn = document.getElementById('fullscreenToggle');
+
+  const charInfoToggleBtn = document.getElementById('charInfoToggleBtn');
+  const charInfoPanel = document.getElementById('charInfoPanel');
+  const charName = document.getElementById('charName');
+  const charRole = document.getElementById('charRole');
+  const charPassive = document.getElementById('charPassive');
+  const charActive = document.getElementById('charActive');
+
+  const gameRulesToggleBtn = document.getElementById('gameRulesToggleBtn');
+  const gameRulesPanel = document.getElementById('gameRulesPanel');
+
+  let hp = 20;
+  let turns = 0;
+
+  const colors = {
+    Natrolite: '#9b59b6',
+    Cruise: '#5dade2',
+    Spectre: '#2c3e50',
+    Figure: '#7f8c8d',
+    Nimbus: '#ffeb3b',
+    Frost: '#00bcd4',
+    Siphon: '#a6d608',
+    Artemis: '#b71c1c'
+  };
+
+  const characterInfo = {
+    Natrolite: {
+      role: 'Tank / Damage Dealer',
+      passive: 'Opponents lose 2 HP whenever they damage you.',
+      active: 'Discard ♦ to block all damage from one ♠ attack.'
+    },
+    Cruise: {
+      role: 'Healer / Support',
+      passive: '+2 HP healing on all ♥ cards you play.',
+      active: 'Discard ♦ to disable an opponent’s defense for their next 2 turns.'
+    },
+    Spectre: {
+      role: 'Trickster / Evasive',
+      passive: 'Dodge or phase through an incoming attack every 3 turns.',
+      active: 'Discard ♣ to swap hands with another player.'
+    },
+    Figure: {
+      role: 'Disruptor / Controller',
+      passive: 'Hallucination Field: At the start of each round, choose an opponent and select a card from their hand. That card is debuffed (effects nullified) for 1 turn.',
+      active: 'Discard ♠ to confuse all opponents, forcing them to skip their next turn.'
+    },
+    Nimbus: {
+      role: 'Leader / Lightning',
+      passive: 'Gain +1 turn at the start of your turn if your HP is above 15.',
+      active: 'Discard ♥ to shock an opponent, dealing 3 damage.'
+    },
+    Frost: {
+      role: 'Crowd Control / Ice',
+      passive: 'Opponents lose their next attack if they damage you.',
+      active: 'Discard ♣ to freeze an opponent, skipping their next turn.'
+    },
+    Siphon: {
+      role: 'Energy Drain / Utility',
+      passive: 'Gain 1 HP whenever you deal damage.',
+      active: 'Discard ♠ to steal 1 turn from an opponent.'
+    },
+    Artemis: {
+      role: 'Ranged DPS / Precision',
+      passive: 'Increase damage by 1 when HP is below 10.',
+      active: 'Discard ♥ to perform a critical hit that ignores defense.'
+    }
+  };
+
+  function updateDisplay() {
+    hpDisplay.textContent = hp;
+
+    // Update player name
+    playerName.textContent = characterSelect.value;
+
+    // Color theme for hp and playerName
+    const color = colors[characterSelect.value] || '#00bfa5';
+    playerName.style.color = color;
+    playerName.style.textShadow = `0 0 10px ${color}`;
+
+    hpDisplay.style.color = color;
+    hpDisplay.style.textShadow = `0 0 8px ${color}`;
+
+    // HP animations and styling
+    hpDisplay.classList.remove('low-hp', 'zero-hp');
+    if (hp <= 0) {
+      hpDisplay.classList.add('zero-hp');
+    } else if (hp <= 5) {
+      hpDisplay.classList.add('low-hp');
+    }
+
+    // Update turn counter text
+    turnCounter.textContent = `Turns: ${turns}`;
+
+    // Update character info panel content
+    const info = characterInfo[characterSelect.value];
+    if (info) {
+      charName.textContent = characterSelect.value;
+      charRole.textContent = info.role;
+      charPassive.textContent = info.passive;
+      charActive.textContent = info.active;
+    }
+  }
+
+  increaseBtn.addEventListener('click', () => {
+    hp++;
+    if(hp > 30) hp = 30; // cap max HP
+    updateDisplay();
+  });
+
+  decreaseBtn.addEventListener('click', () => {
+    if (hp > 0) {
+      hp--;
+      updateDisplay();
+    }
+  });
+
+  resetBtn.addEventListener('click', () => {
+    hp = 20;
+    turns = 0;
+    updateDisplay();
+  });
+
+  turnIncreaseBtn.addEventListener('click', () => {
+    turns++;
+    updateDisplay();
+  });
+
+  turnDecreaseBtn.addEventListener('click', () => {
+    if (turns > 0) {
+      turns--;
+      updateDisplay();
+    }
+  });
+
+  characterSelect.addEventListener('change', () => {
+    hp = 20; // reset HP on character change
+    turns = 0; // reset turns on character change
+    updateDisplay();
+  });
+
+  charInfoToggleBtn.addEventListener('click', () => {
+    const isOpen = charInfoPanel.classList.toggle('open');
+    charInfoToggleBtn.setAttribute('aria-expanded', isOpen);
+  });
+
+  gameRulesToggleBtn.addEventListener('click', () => {
+    const isOpen = gameRulesPanel.classList.toggle('open');
+    gameRulesToggleBtn.setAttribute('aria-expanded', isOpen);
+  });
+
+  fullscreenBtn.addEventListener('click', () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
+      fullscreenBtn.title = "Exit fullscreen";
+    } else if (document.exitFullscreen) {
+      document.exitFullscreen();
+      fullscreenBtn.title = "Enter fullscreen";
+    }
+  });
+
+  // Initialize display on page load
+  updateDisplay();
+</script>
+</body>
+</html>
