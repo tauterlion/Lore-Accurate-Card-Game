@@ -112,22 +112,23 @@
     margin: 0 auto;
   }
   /* Buttons styling */
-  button {
-    flex: 0 0 100px;
-    border: none;
-    border-radius: 12px;
-    color: #121212;
-    font-size: 2.2rem;
-    padding: 1rem 2rem;
-    font-weight: bold;
-    cursor: pointer;
-    box-shadow: 0 0 10px;
-    transition: background 0.3s ease, box-shadow 0.3s ease, color 0.3s ease;
-    background: #00bfa5;
-    user-select: none;
-    text-align: center;
-    white-space: nowrap;
-  }
+.buttons button {
+  flex: 0 0 60px;          /* narrower width */
+  font-size: 2.8rem;       /* slightly bigger icons */
+  padding: 0.8rem 1rem;    /* tighter padding */
+  border-radius: 12px;
+  border: none;
+  color: #121212;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 0 10px;
+  transition: background 0.3s ease, box-shadow 0.3s ease, color 0.3s ease;
+  background: #00bfa5;
+  user-select: none;
+  text-align: center;
+  white-space: nowrap;
+}
+
   button:active {
     box-shadow: 0 0 20px inset;
   }
@@ -422,11 +423,12 @@
   <div id="container">
     <div id="playerName">Natrolite</div>
     <h1 id="hp">25</h1>
-    <div class="buttons">
-      <button id="decrease" aria-label="Decrease health by 1">-1</button>
-      <button id="reset" aria-label="Reset health to 25 and turns to 0">Reset</button>
-      <button id="increase" aria-label="Increase health by 1">+1</button>
-    </div>
+<div class="buttons">
+  <button id="decrease" aria-label="Decrease health by 1" title="Damage">➖</button>
+  <button id="reset" aria-label="Reset health to 25 and turns to 0">Reset</button>
+  <button id="increase" aria-label="Increase health by 1" title="Heal">❤️</button>
+</div>
+
   </div>
 
   <div id="turnContainer" aria-live="polite" aria-atomic="true" role="region" aria-label="Turn counter">
