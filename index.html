@@ -421,10 +421,10 @@
 
   <div id="container">
     <div id="playerName">Natrolite</div>
-    <h1 id="hp">20</h1>
+    <h1 id="hp">25</h1>
     <div class="buttons">
       <button id="decrease" aria-label="Decrease health by 1">-1</button>
-      <button id="reset" aria-label="Reset health to 20 and turns to 0">Reset</button>
+      <button id="reset" aria-label="Reset health to 25 and turns to 0">Reset</button>
       <button id="increase" aria-label="Increase health by 1">+1</button>
     </div>
   </div>
@@ -569,7 +569,7 @@ Trigger unique events that activate immediately. Clubs cannot be paired with dia
   const gameRulesToggleBtn = document.getElementById('gameRulesToggleBtn');
   const gameRulesPanel = document.getElementById('gameRulesPanel');
 
-  let hp = 20;
+  let hp = 25;
   let turns = 0;
 
   const colors = {
@@ -596,12 +596,12 @@ Trigger unique events that activate immediately. Clubs cannot be paired with dia
     },
     Spectre: {
       role: 'Trickster / Evasive',
-      passive: 'Dodge or phase through an incoming attack every 3 turns.',
+      passive: 'Dodge or phase through an incoming attack when your turn is an even number.',
       active: 'Discard ♣ to swap hands with another player.'
     },
     Figure: {
       role: 'Disruptor / Controller',
-      passive: 'Hallucination Field: At the start of each round, choose an opponent and select a card from their hand. That card is debuffed (effects nullified) for 1 turn.',
+      passive: 'At the start of each round, choose an opponent and select a card from their hand. That card is debuffed (effects nullified) for 1 turn.',
       active: 'Discard ♦ to make a player of your choice lose their passive ability until the start of your next turn.'
     },
     Nimbus: {
@@ -675,7 +675,7 @@ Trigger unique events that activate immediately. Clubs cannot be paired with dia
   });
 
   resetBtn.addEventListener('click', () => {
-    hp = 20;
+    hp = 25;
     turns = 0;
     updateDisplay();
   });
@@ -693,7 +693,7 @@ Trigger unique events that activate immediately. Clubs cannot be paired with dia
   });
 
   characterSelect.addEventListener('change', () => {
-    hp = 20; // reset HP on character change
+    hp = 25; // reset HP on character change
     turns = 0; // reset turns on character change
     updateDisplay();
   });
