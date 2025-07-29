@@ -468,7 +468,7 @@
 
 <h3 style="color:#00bfa5;">Card Suits &amp; Their Basic Functions</h3>
 <p><strong>Spades (♠):</strong> Attack cards<br />
-Damage activates at the end of the target’s next turn, allowing them time to counter.</p>
+Damage activates at the end of the target’s next turn, allowing them time to counter. Can disrupt a diamond card before the target's turn.</p>
 
 <p><strong>Hearts (♥):</strong> Healing cards<br />
 Activate immediately when played.</p>
@@ -521,14 +521,16 @@ Trigger unique events that activate immediately. Clubs cannot be paired with dia
 <h3 style="color:#00bfa5;">Club Card Events</h3>
 <p><strong>Jack (♣) — Double Draw:</strong> All players draw until they reach 5 cards in their hand. If you are already holding 5 cards, draw 1 card instead.</p>
 <p><strong>Queen (♣) — Energy Drain:</strong> All players’ cooldowns, counters, and powers reset; if none, discard 1 card.</p>
-<p><strong>King (♣) — Silence Field:</strong> No abilities throughout the duration of the current round and the next.</p>
+<p><strong>King (♣) — Silence Field:</strong> No abilities throughout the current round and the next.</p>
 <p><strong>Ace (♣) — Wildcard Mastery:</strong></p>
 <ul>
-  <li>Play: Choose and apply any one club event immediately.</li>
+  <li>Play: Choose and apply any one club event immediately (numbered clubs affect everyone).</li>
   <li>Discard: Double one of your passive or active ability effects permanently.</li>
 </ul>
 <p><strong>Numbered Clubs (affect player + one opponent):</strong></p>
 <ul>
+  <li>Can disrupt the target's charged diamond card.</li>
+</ul>
   <li>2–5: Both discard 1 card or lose the ability to draw for one turn.</li>
   <li>6–8: Combine hands, shuffle, redraw.</li>
   <li>9–10: Both discard entire hands and redraw.</li>
@@ -614,7 +616,7 @@ Trigger unique events that activate immediately. Clubs cannot be paired with dia
     Frost: {
       role: 'Crowd Control / Ice',
       passive: 'At the start of your turn, if you were damaged by a red card (♥ or ♦) last turn, permanently gain +1 damage to all your attacks.',
-      active: 'Discard ♣ to stun a player (skip their next turn), or draw a card; if it’s a face card, freeze all opponents for 1 turn.'
+      active: 'Discard ♥ to stun a player (skip their next turn), or draw a card; if it’s a face card, freeze all opponents for 1 turn.'
     },
     Siphon: {
       role: 'Energy Drain / Utility',
@@ -624,7 +626,7 @@ Trigger unique events that activate immediately. Clubs cannot be paired with dia
     Artemis: {
       role: 'Tactical Disruptor / Precision Striker',
       passive: 'At the start of your turn, look at the top card of the deck. You may play any card as a ♠ (attack).',
-      active: 'Discard 1 card to force the opponent of your choice to reveal a random card from their hand.'
+      active: 'Discard ♦ to force the opponent of your choice to reveal a random card from their hand.'
     }
   };
 
